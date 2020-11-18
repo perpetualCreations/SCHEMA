@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Documentation for Raspbot Project.">
+        <meta name="keywords" content="Taian Chen, taian chen, TChen, tchen, perpetualCreations, perpetualcreations, socket wrapper, python, python3, socket wrapper for byte strings, swbs, swbs documentation, swbs docs, dreamerslegacy, dreamer's legacy, Dreamer's Legacy, dreamerslegacy.xyz">
+        <meta name="author" content="Taian Chen">
+        <title>ABL Documentation</title>
+        <link rel="preload" href="/css/main.css" as="style">
+        <link rel="preload" href="/css/schema.css" as="style">
+        <link rel="preload" href="/projects/swbs/icon-upscaled.png" as="image">
+        <link rel="icon" href="/resources/homeIcon-favicon.ico">
+        <link rel="stylesheet" type="text/css" href="/css/main.css">
+        <link rel="stylesheet" type="text/css" href="/css/schema.css">
+        <style>
+			img {
+ 				 width: 100%;
+				}
+        </style>
+    </head>
+    <body>
+        <!-- Hey kid. Wanna learn HTML instead of just looking at it and feeling smart? -->
+        <div class = "topnav">
+            <a href = "/index.html">Back To Portfolio</a>
+        </div>
+        <div class = "schema">
+            <img src="/projects/swbs/icon-upscaled.png" class = "project-icons"><h1>SWBS Documentation</h1>
+            <p style = "margin-left: 5px;">Original available <a href = "https://github.com/perpetualCreations/SWBS/blob/master/readme.md" target = "_blank">here</a>.</p>
+            <div id="content">
+                <h4>A straight-forward wrapper for sending and receiving byte strings with sockets.</h4>
+                <h3>Install</h3>
+                <p>Download the Python wheel file from the Github repository release, and install manually using:</p>
+                <p class = "code-block"><span class = "command">pip3 install</span> /path/to/wheel/file/here/swbs-1.0-py3-none-any.whl</p>
+                <p>Or install through PyPI, using:</p>
+                <p class = "code-block"><span class = "command">pip3 install swbs</span></p>
+                <h3>How to Use</h3>
+                <p>You'll be creating two scripts, one running the socket server, and the other the client. The server and client can send and receive both ways, regardless of their role.</p>
+                <p>The server must run first, to listen for the client's connection. Please plan accordingly, for you specific implementation.</p>
+                <h4>Import</h4>
+                <p>First start by importing the package.</p>
+                <p class = "code-block"><span class = "statement">import</span> swbs</p>
+                <h4>Configure</h4>
+                <p>You'll then need to configure SWBS, through <span class = "code-quote">swbs.configure</span>.</p>
+                <p>Within <span class = "code-quote">swbs.configure</span> are functions <span class = "code-quote">security</span>, <span class = "code-quote">role</span>, <span class = "code-quote">destination</span>, and <span class = "code-quote">endpoint</span>.</p>
+                <p><span class = "code-quote">swbs.configure.security</span> takes four parameters.</p>
+                <p>The first is a string, used as the encryption key.</p>
+                <p>The second is anohter string, used as the HMAC key.</p>
+                <p>The third as well is a string, used for authenticating hosts. It works like a password.</p>
+                <p>The final parameter is optional, and accepts a True or False boolean, it only applies to the server script.</p>
+                <p>It signals whether the authentication string is a SHA3 256 hash, and when comparing the client's given authentication string, should hash the given string and compare.</p>
+                <p>This is useful for implementations where the authentication string cannot be stored in plaintext. By default though, this is disabled. To turn this option on, set this parameter to True.</p>
+                <p>Please ensure you have set the same keys for both the server and client scripts.</p>
+                <p><span class = "code-quote">swbs.configure.role</span> takes one parameter, a True or False boolean.</p>
+                <p>If set to True, SWBS will take the role of the server. By default, the role is set to False, signaling to operate as a client.</p>
+                <h4>Client Only</h4>
+                <p><span class = "code-quote">swbs.configure.destination</span> takes two parameters. It only applies to the client script.</p>
+                <p>The first is a string, being the IP address of the server. Point this to the address of the host that the server script is running on. If you're running both of them on your computer for testing purposes, set this to "localhost" or "127.0.0.1".</p>
+                <p>The second is an integer, being the port the server is listening to. By default, this is set to port 64220. You may change this, however the port must be the same across the client and server.</p>
+                <p>Client example:</p>
+                <div class = "code-block">
+                    <p><span class = "statement">import</span> swbs</p>
+                    <p>swbs.configure.<span class = "function">security</span><span class = "brace">(</span><span class = "string">"some encryption key"</span><span class = "comma">,</span> <span class = "string">"an hmac key"</span><span class = "comma">,</span> <span class = "string">"auth string"</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">role</span><span class = "brace">(</span><span class = "boolean">False</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">destination</span><span class = "brace">(</span><span class = "string">"localhost"</span><span class = "comma">,</span> <span class = "number">2234</span><span class = "brace">)</span> <span class = "comment"># localhost can be replaced with an IP such as 192.168.1.1, if you're using the default port, you may forgo the second parameter.</span></p>
+                </div>
+                <h4>Server Only</h4>
+                <p><span class = "code-quote">swbs.configure.endpoint</span> takes three parameters. It only applies to the server script.</p>
+                <p>The first is a string, being the hostname (IP) of the server. By default this is "localhost" or "127.0.0.1".</p>
+                <p>The second is an integer, being the port the server is listening to. By default, this is set to port 64220. You may change this, however the port must be the same across the client and server.</p>
+                <p>The third is optional, and is a True/False boolean, signaling whether to automatically retrieve the hostname of the server. By default, this is set to False.</p>
+                <div class = "code-block">
+                    <p><span class = "statement">import</span> swbs</p>
+                    <p>swbs.configure.<span class = "function">security</span><span class = "brace">(</span><span class = "string">"some encryption key"</span><span class = "comma">,</span> <span class = "string">"an hmac key"</span><span class = "comma">,</span> <span class = "string">"auth string"</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">role</span><span class = "brace">(</span><span class = "boolean">False</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">endpoint</span><span class = "brace">(</span><span class = "string">"localhost"</span><span class = "comma">,</span> <span class = "number">2234</span><span class = "brace">)</span> <span class = "comment"># localhost can be replaced with an IP such as 192.168.1.1, if you're using the default port, you may forgo the second parameter.</span></p>
+                </div>
+                <h4>Connect and Accept</h4>
+                <p>After configuring, you can have client try connecting to the server.</p>
+                <p><span>swbs.interface</span> contains the functions for the client and server to interact. See below on how they are used.</p>
+                <h4>Client Only</h4>
+                <p><span class = "code-quote">swbs.interface.connect</span> as the name suggests, is a function that connects the client to the server.</p>
+                <p>It does not take any parameters, it works off what you have already configured.</p>
+                <p>Using this function, the example now looks like:</p>
+                <div class = "code-block">
+                    <p><span class = "statement">import</span> swbs</p>
+                    <p>swbs.configure.<span class = "function">security</span><span class = "brace">(</span><span class = "string">"some encryption key"</span><span class = "comma">,</span> <span class = "string">"an hmac key"</span><span class = "comma">,</span> <span class = "string">"auth string"</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">role</span><span class = "brace">(</span><span class = "boolean">False</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">destination</span><span class = "brace">(</span><span class = "string">"localhost"</span><span class = "comma">,</span> <span class = "number">2234</span><span class = "brace">)</span> <span class = "comment"># localhost can be replaced with an IP such as 192.168.1.1, if you're using the default port, you may forgo the second parameter.</span></p>
+                    <p>swbs.interface.<span class = "function">connect</span><span class = "function">()</span></p>
+                </div>
+                <h4>Server Only</h4>
+                <p><span class = "code-quote">swbs.interface.accept</span> as the name suggets, is a function that accepts connections from the client.</p>
+                <p>It does not take any parameters, it works off what you have already configured. This function is blocking, meaning it will halt your script until a connection is made.</p>
+                <p>Using this function, the example now looks like:</p>
+                <div class = "code-block">
+                    <p><span class = "statement">import</span> swbs</p>
+                    <p>swbs.configure.<span class = "function">security</span><span class = "brace">(</span><span class = "string">"some encryption key"</span><span class = "comma">,</span> <span class = "string">"an hmac key"</span><span class = "comma">,</span> <span class = "string">"auth string"</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">role</span><span class = "brace">(</span><span class = "boolean">False</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">endpoint</span><span class = "brace">(</span><span class = "string">"localhost"</span><span class = "comma">,</span> <span class = "number">2234</span><span class = "brace">)</span> <span class = "comment"># localhost can be replaced with an IP such as 192.168.1.1, if you're using the default port, you may forgo the second parameter.</span></p>
+                    <p>swbs.interface.<span class = "function">accept</span><span class = "brace">()</span></p>
+                </div>
+                <h4>Send and Receive</h4>
+                <p>After adding functions for establishing the connection, we can now use the send and receive functions.</p>
+                <p>To do this, we can use functions <span class = "code-quote">swbs.interface.send</span> and <span class = "code-quote">swbs.interface.receive</span>.</p>
+                <p>Both functions accept one common parameter, a string or bytestring, which is the message to be sent.</p>
+                <p><span class = "code-quote">swbs.interface.receive</span> however has a second, optional parameter, that accepts a True or False boolean, signaling whether to decode the bytestring, and instead return a regular string.</p>
+                <p>Our code examples from before, now using these functions, now look like this:</p>
+                <p>Client example:</p>
+                <div class = "code-block">
+                    <p><span class = "statement">import</span> swbs</p>
+                    <p>swbs.configure.<span class = "function">security</span><span class = "brace">(</span><span class = "string">"some encryption key"</span><span class = "comma">,</span> <span class = "string">"an hmac key"</span><span class = "comma">,</span> <span class = "string">"auth string"</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">role</span><span class = "brace">(</span><span class = "boolean">False</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">destination</span><span class = "brace">(</span><span class = "string">"localhost"</span><span class = "comma">,</span> <span class = "number">2234</span><span class = "brace">)</span> <span class = "comment"># localhost can be replaced with an IP such as 192.168.1.1, if you're using the default port, you may forgo the second parameter.</span></p>
+                    <p>swbs.interface.<span class = "function">connect</span><span class = "function">()</span></p>
+                    <p>swbs.interface.<span class = "function">send</span><span class = "brace">(</span><span class = "string">"hello world"</span><span class = "brace">)</span></p>
+                </div>
+                <p>Server example:</p>
+                <div class = "code-block">
+                    <p><span class = "statement">import</span> swbs</p>
+                    <p>swbs.configure.<span class = "function">security</span><span class = "brace">(</span><span class = "string">"some encryption key"</span><span class = "comma">,</span> <span class = "string">"an hmac key"</span><span class = "comma">,</span> <span class = "string">"auth string"</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">role</span><span class = "brace">(</span><span class = "boolean">False</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">endpoint</span><span class = "brace">(</span><span class = "string">"localhost"</span><span class = "comma">,</span> <span class = "number">2234</span><span class = "brace">)</span> <span class = "comment"># localhost can be replaced with an IP such as 192.168.1.1, if you're using the default port, you may forgo the second parameter.</span></p>
+                    <p>swbs.interface.<span class = "function">accept</span><span class = "brace">()</span></p>
+                    <p><span class = "function">print</span><span class = "brace">(</span>swbs.interface.<span class = "function">receive</span><span class = "brace">(</span><span class = "boolean">True</span><span class = "brace">))</span></p>
+                </div>
+                <h4>Disconnect</h4>
+                <p>When your script has finished, or your application terminated, we want to close the connection we've made.</p>
+                <p>We can do this by using <span class = "code-quote">swbs.interface</span> again, with the <span class = "code-quote">disconnect</span> function. After disconnecting, you can always restart the connection by running <span class = "code-quote">swbs.interface.connect</span> and <span class = "code-quote">swbs.interface.accept</span>.</p>
+                <p>Now our code example looks like this:</p>
+                <p>Client example:</p>
+                <div class = "code-block">
+                    <p><span class = "statement">import</span> swbs</p>
+                    <p>swbs.configure.<span class = "function">security</span><span class = "brace">(</span><span class = "string">"some encryption key"</span><span class = "comma">,</span> <span class = "string">"an hmac key"</span><span class = "comma">,</span> <span class = "string">"auth string"</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">role</span><span class = "brace">(</span><span class = "boolean">False</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">destination</span><span class = "brace">(</span><span class = "string">"localhost"</span><span class = "comma">,</span> <span class = "number">2234</span><span class = "brace">)</span> <span class = "comment"># localhost can be replaced with an IP such as 192.168.1.1, if you're using the default port, you may forgo the second parameter.</span></p>
+                    <p>swbs.interface.<span class = "function">connect</span><span class = "function">()</span></p>
+                    <p>swbs.interface.<span class = "function">send</span><span class = "brace">(</span><span class = "string">"hello world"</span><span class = "brace">)</span></p>
+                    <p>swbs.interface.<span class = "function">disconnect</span><span class = "brace">()</span></p>
+                </div>
+                <p>Server example:</p>
+                <div class = "code-block">
+                    <p><span class = "statement">import</span> swbs</p>
+                    <p>swbs.configure.<span class = "function">security</span><span class = "brace">(</span><span class = "string">"some encryption key"</span><span class = "comma">,</span> <span class = "string">"an hmac key"</span><span class = "comma">,</span> <span class = "string">"auth string"</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">role</span><span class = "brace">(</span><span class = "boolean">False</span><span class = "brace">)</span></p>
+                    <p>swbs.configure.<span class = "function">endpoint</span><span class = "brace">(</span><span class = "string">"localhost"</span><span class = "comma">,</span> <span class = "number">2234</span><span class = "brace">)</span> <span class = "comment"># localhost can be replaced with an IP such as 192.168.1.1, if you're using the default port, you may forgo the second parameter.</span></p>
+                    <p>swbs.interface.<span class = "function">accept</span><span class = "brace">()</span></p>
+                    <p><span class = "function">print</span><span class = "brace">(</span>swbs.interface.<span class = "function">receive</span><span class = "brace">(</span><span class = "boolean">True</span><span class = "brace">))</span></p>
+                    <p>swbs.interface.<span class = "function">disconnect</span><span class = "brace">()</span></p>
+                </div>
+                <h4>Conclusion</h4>
+                <p>This concludes our walkthrough of using the SWBS package.</p>
+                <p>If you would like to see a pre-written example, ready-to-run, see the tests directory in the repository.</p>
+                <p>Please remember, the server script must be running first, before an client can connect to it.</p>
+                <h4>Future</h4>
+                <p>More features are planned, with examples such as <span class = "code-quote">swbs.interface.reconnect</span>. These will see implementation in future releases.</p>
+                <h4>End</h4>
+                <p>This is the end of the documentation for the SWBS package.</p>
+                <p>If you any inquiries, please contact the project maintainer(s).</p>
+                <p>This project was built off of the <span class = "code-quote">comms</span> module of the Raspbot project's control application.</p>
+            </div>
+        </div>
+        <p class = "footer-text">dreamer's legacy, 2020-2021</p>
+        <script>
+            var coll = document.getElementsByClassName("collapsible");
+            var i;
+            for (i = 0; i < coll.length; i++) {
+              coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                document.getElementsByClassName("collapsible:after").content = "▲";
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight){
+                  content.style.maxHeight = null;
+                } else {
+                  content.style.maxHeight = content.scrollHeight + "px";
+                }
+              });
+            }
+        </script>
+    </body>
+</html>
