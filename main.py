@@ -3,13 +3,14 @@ Project SCHEMA
 Convert Markdown documentation into HTML, with a minimal, dark theme.
 
 main module.
+
+TODO modularize and cleanup
 """
 
 # imports
 import argparse
 from urllib.request import urlretrieve
 from os import remove
-from bs4 import BeautifulSoup
 
 # arguments
 # TODO add more for further automatic formatting and auxiliary options
@@ -115,12 +116,15 @@ with open(parameters.src_path) as doc:
                 pass
                 product += '''
             <h''' + str(doc.readline(index)[:6].count("#")) + ">" + contents + "</h" + str(doc.readline(index)[:6].count("#")) + ">" # apply contents into a header tag, size is based off of number of hashtags
-            elif doc.readline(index) == "": # if empty line, empty paragraph dump into tag
+            elif doc.readline(index) == "" and dump != "": # if empty line and paragraph dump is not empty, empty paragraph dump into tag
                 product += '''
-                
-                '''
+            <p>''' + dump + "</p>"
+                dump = ""
             else: # if all clauses fail, parse as paragraph
-
+                if dump == "": # if there's already paragraph text in dump, add a whitespace before appending
+                    dump += doc.readline(index)
+                else:
+                    dump += " " + doc.readline(index)
                 pass
             pass
             index += 1
