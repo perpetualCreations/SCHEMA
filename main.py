@@ -5,10 +5,14 @@ Convert Markdown documentation into HTML, with a minimal, dark theme.
 main module.
 """
 
+# imports
 import argparse
 from urllib.request import urlretrieve
 from os import remove
+from bs4 import BeautifulSoup
 
+# arguments
+# TODO add more for further automatic formatting and auxiliary options
 arguments = argparse.ArgumentParser(description = "Convert Markdown into HTML documentation, featuring a minimal, dark theme.")
 arguments.add_argument("--fetchcss", dest = "fetch", action = "store_const", const = True, help = "Specify this flag if you want the CSS documents required for rendering the HTML document. This requires an Internet connection.")
 arguments.add_argument("--url", dest = "src_url", type = str, help = "Specify the URL to retrieve the Markdown document. This requires an Internet connection.")
@@ -20,6 +24,7 @@ arguments.add_argument("--showbadges", dest = "showbadges", action = "store_cons
 arguments.add_argument("--navback", dest = "nav", action = "store_const", const = True, help = "Specify this flag if you want to have a navigation bar on the top of the page to return to index.html.")
 parameters = arguments.parse_args()
 
+# if --fetchcss is specified, get CSS documents for rendering the page
 if parameters.fetch is True:
     urlretrieve("https://dreamerslegacy.xyz/css/main.css", "main.css")
     urlretrieve("https://dreamerslegacy.xyz/css/schema.css", "schema.css")
@@ -28,6 +33,7 @@ else:
     print("--fetchcss was not specified, not retrieving CSS documents.")
 pass
 
+# if --url is specified, get Markdown document from specified URL
 if parameters.src_url is not None:
     urlretrieve(parameters.src_url, "temp.md")
     parameters.src_path = "temp.md"
@@ -37,14 +43,17 @@ else:
     pass
 pass
 
+# if --name is not specified, use this as project name
 if parameters.name is None:
     parameters.name = "(Project Name Not Specified)"
 pass
 
+# if --author is not specified, use this as author name
 if parameters.author is None:
     parameters.author = "Unknown"
 pass
 
+# base template including head for output document, product stores the document
 product = """<!DOCTYPE html>
 <html>
     <head>
@@ -56,6 +65,7 @@ product = """<!DOCTYPE html>
         <link rel="preload" href="main.css" as="style">
         <link rel="preload" href="schema.css" as="style">'''
 
+# if --icon is specified, include image preload, this marginally accelerates page render times
 if parameters.icon is not None:
     product += '''<link rel="preload" href="''' + parameters.icon + '''" as="image">'''
 pass
@@ -72,6 +82,7 @@ product += '''
     </head>
     <body>'''
 
+# if --navback is specified, add a navigation bar leading back to index.html
 if parameters.nav is not None:
     product += '''
         <div class = "topnav">
@@ -79,14 +90,39 @@ if parameters.nav is not None:
         </div>'''
 pass
 
+# define page contents with div tag
 product += '''
         <div class = "schema">'''
 
+# if --icon is specified, add image tag for icon
+if parameters.icon is not None:
+    product += '''
+            <img src="''' + parameters.icon + '''" class = "project-icons">'''
+pass
+
+# parse the document
 with open(parameters.src_path) as doc:
-    index = 0
+    index = 0 # index of current parsed line
+    in_code_quote = False # whether the parsed line is currently in a code quote
+    dump = "" # paragraph text is dumped here until a newline is detected, when then it is emptied into a tag, and this variable reset
     try:
         while True:
-            doc.readline(index)
+            if doc.readline(index)[:6].count("#") != 0 and in_code_quote is False: # header conversion, checks for 6 or less hashtags at the start of a line, which is syntax for a header in Markdown, will not trigger if in code-quote
+                if doc.readline(index)[doc.readline(index)[:6].count("#"):][:1] == " ": # check if there is a whitespace after the hashtags, remove if there is, send output to variable named contents
+                    contents = doc.readline(index)[doc.readline(index)[:6].count("#"):].lstrip(" ")
+                else:
+                    contents = doc.readline(index)[doc.readline(index)[:6].count("#"):]
+                pass
+                product += '''
+            <h''' + str(doc.readline(index)[:6].count("#")) + ">" + contents + "</h" + str(doc.readline(index)[:6].count("#")) + ">" # apply contents into a header tag, size is based off of number of hashtags
+            elif doc.readline(index) == "": # if empty line, empty paragraph dump into tag
+                product += '''
+                
+                '''
+            else: # if all clauses fail, parse as paragraph
+
+                pass
+            pass
             index += 1
         pass
     except EOFError:
