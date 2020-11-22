@@ -108,7 +108,15 @@ with open(parameters.src_path) as doc:
     dump = "" # paragraph text is dumped here until a newline is detected, when then it is emptied into a tag, and this variable reset
     try:
         while True:
-            if doc.readline(index)[:6].count("#") != 0 and in_code_quote is False: # header conversion, checks for 6 or less hashtags at the start of a line, which is syntax for a header in Markdown, will not trigger if in code-quote
+            if index == 0 and all(x in "=" for x in doc.readline(index + 1)) is True: # header 1 conversion, checks for = symbol in next line
+                product += '''
+            <h1>''' + doc.readline(index) + "</h1>"
+                index += 1
+            elif index == 0 and all(x in "-" for x in doc.readline(index + 1)) is True: # header 2 conversion, checks for - symbol in next line
+                product += '''
+            <h2>''' + doc.readline(index) + "</h2>"
+                index += 1
+            elif doc.readline(index)[:6].count("#") != 0 and in_code_quote is False: # header conversion, checks for 6 or less hashtags at the start of a line, which is syntax for a header in Markdown, will not trigger if in code-quote
                 if doc.readline(index)[doc.readline(index)[:6].count("#"):][:1] == " ": # check if there is a whitespace after the hashtags, remove if there is, send output to variable named contents
                     contents = doc.readline(index)[doc.readline(index)[:6].count("#"):].lstrip(" ")
                 else:
@@ -116,15 +124,19 @@ with open(parameters.src_path) as doc:
                 pass
                 product += '''
             <h''' + str(doc.readline(index)[:6].count("#")) + ">" + contents + "</h" + str(doc.readline(index)[:6].count("#")) + ">" # apply contents into a header tag, size is based off of number of hashtags
+            elif [] in doc.readline(index):
+                pass
             elif doc.readline(index) == "" and dump != "": # if empty line and paragraph dump is not empty, empty paragraph dump into tag
                 product += '''
             <p>''' + dump + "</p>"
                 dump = ""
             else: # if all clauses fail, parse as paragraph
-                if dump == "": # if there's already paragraph text in dump, add a whitespace before appending
+                if dump == "" and doc.readline(index) != "": # if there's already paragraph text in dump, add a whitespace before appending
                     dump += doc.readline(index)
-                else:
+                elif dump != "" and doc.readline(index) != "":
                     dump += " " + doc.readline(index)
+                else: # skip line, no syntax was able to be parsed, this occurs if dump was empty and parser parsed an empty line
+                    pass
                 pass
             pass
             index += 1
