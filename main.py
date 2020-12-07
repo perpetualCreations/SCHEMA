@@ -23,6 +23,7 @@ arguments.add_argument("--author", dest = "author", type = str, help = "Specify 
 arguments.add_argument("--icon", dest = "icon", type = str, help = "Specify path to project icon image, this will be rescaled to a 64x64 pixels when the page is displayed.")
 arguments.add_argument("--showbadges", dest = "showbadges", action = "store_const", const = True, help = "Specify this flag if you want to transfer badges. Supported badge types include Shields.io (WIP) and ForTheBadge.")
 arguments.add_argument("--navback", dest = "nav", action = "store_const", const = True, help = "Specify this flag if you want to have a navigation bar on the top of the page to return to index.html.")
+arguments.add_argument("--classicform", dest = "classic", action = "store_const", const = True, help = "Specify this flag for the classic SCHEMA format.")
 parameters = arguments.parse_args()
 
 # if --fetchcss is specified, get CSS documents for rendering the page
@@ -52,6 +53,10 @@ pass
 # if --author is not specified, use this as author name
 if parameters.author is None:
     parameters.author = "Unknown"
+pass
+
+if parameters.classic is not None:
+    pass # todo implement this
 pass
 
 # base template including head for output document, product stores the document
@@ -108,35 +113,57 @@ with open(parameters.src_path) as doc:
     dump = "" # paragraph text is dumped here until a newline is detected, when then it is emptied into a tag, and this variable reset
     try:
         while True:
-            if index == 0 and all(x in "=" for x in doc.readline(index + 1)) is True: # header 1 conversion, checks for = symbol in next line
-                product += '''
-            <h1>''' + doc.readline(index) + "</h1>"
-                index += 1
-            elif index == 0 and all(x in "-" for x in doc.readline(index + 1)) is True: # header 2 conversion, checks for - symbol in next line
-                product += '''
-            <h2>''' + doc.readline(index) + "</h2>"
-                index += 1
-            elif doc.readline(index)[:6].count("#") != 0 and in_code_quote is False: # header conversion, checks for 6 or less hashtags at the start of a line, which is syntax for a header in Markdown, will not trigger if in code-quote
-                if doc.readline(index)[doc.readline(index)[:6].count("#"):][:1] == " ": # check if there is a whitespace after the hashtags, remove if there is, send output to variable named contents
-                    contents = doc.readline(index)[doc.readline(index)[:6].count("#"):].lstrip(" ")
-                else:
-                    contents = doc.readline(index)[doc.readline(index)[:6].count("#"):]
-                pass
-                product += '''
-            <h''' + str(doc.readline(index)[:6].count("#")) + ">" + contents + "</h" + str(doc.readline(index)[:6].count("#")) + ">" # apply contents into a header tag, size is based off of number of hashtags
-            elif [] in doc.readline(index):
-                pass
-            elif doc.readline(index) == "" and dump != "": # if empty line and paragraph dump is not empty, empty paragraph dump into tag
-                product += '''
-            <p>''' + dump + "</p>"
-                dump = ""
-            else: # if all clauses fail, parse as paragraph
-                if dump == "" and doc.readline(index) != "": # if there's already paragraph text in dump, add a whitespace before appending
-                    dump += doc.readline(index)
-                elif dump != "" and doc.readline(index) != "":
-                    dump += " " + doc.readline(index)
-                else: # skip line, no syntax was able to be parsed, this occurs if dump was empty and parser parsed an empty line
+            if "```" in doc.readline(index) and in_code_quote is False:
+                in_code_quote = True
+            elif "```" in doc.readline(index) and in_code_quote is True:
+                in_code_quote = False
+                # TODO code block closure
+            pass
+            if in_code_quote is False:
+                # TODO add HTML tag parsing, including <br>
+                if index == 0 and all(x in "=" for x in doc.readline(index + 1)) is True: # header 1 conversion, checks for = symbol in next line
+                    product += '''
+                <h1>''' + doc.readline(index) + "</h1>"
+                    index += 1
+                elif index == 0 and all(x in "-" for x in doc.readline(index + 1)) is True: # header 2 conversion, checks for - symbol in next line
+                    product += '''
+                <h2>''' + doc.readline(index) + "</h2>"
+                    index += 1
+                elif doc.readline(index)[:6].count("#") != 0 and in_code_quote is False: # header x conversion, checks for 6 or less hashtags at the start of a line, which is syntax for a header in Markdown, will not trigger if in code-quote
+                    if doc.readline(index)[doc.readline(index)[:6].count("#"):][:1] == " ": # check if there is a whitespace after the hashtags, remove if there is, send output to variable named contents
+                        contents = doc.readline(index)[doc.readline(index)[:6].count("#"):].lstrip(" ")
+                    else:
+                        contents = doc.readline(index)[doc.readline(index)[:6].count("#"):]
                     pass
+                    product += '''
+                <h''' + str(doc.readline(index)[:6].count("#")) + ">" + contents + "</h" + str(doc.readline(index)[:6].count("#")) + ">" # apply contents into a header tag, size is based off of number of hashtags
+                elif "[![forthebadge](https://forthebadge.com/images/badges/" in doc.readline(index): # ForTheBadge support, now you can have semi-sarcastic pseudo-badges on your documentation TODO fix badges
+                    product += '''
+                <a href = "https://forthebadge.com" target = "_blank">''' + '<img>'
+                    "[![forthebadge](https://forthebadge.com/images/badges/0-percent-optimized.svg)](https://forthebadge.com)"
+                    pass
+                elif "[![forthebadge](https://forthebadge.com/images/badges/" in doc.readline(index): # ForTheBadge support, now you can have semi-sarcastic pseudo-badges on your documentation TODO shield.io badges
+                    product += '''
+                <a href = "https://forthebadge.com" target = "_blank">''' + '<img>'
+                    pass
+                elif doc.readline(index) == "" and dump != "": # if empty line and paragraph dump is not empty, empty paragraph dump into tag
+                    product += '''
+                <p>''' + dump + "</p>"
+                    dump = ""
+                else: # if all clauses fail, parse as paragraph
+                    if doc.readline(index)[-2:] == "  ": # if line has two trailing whitespaces, parse contents directly into a paragraph tag instead of dump
+                        product += '''
+                <p>''' + doc.readline(index) + "</p>"
+                    elif dump == "" and doc.readline(index) != "": # if there's already paragraph text in dump, add a whitespace before appending
+                        dump += doc.readline(index)
+                    elif dump != "" and doc.readline(index) != "":
+                        dump += " " + doc.readline(index)
+                    else: # skip line, no syntax was able to be parsed, this occurs if dump was empty and parser parsed an empty line
+                        pass
+                    pass
+                pass
+            else:
+                # TODO code block parsing
                 pass
             pass
             index += 1
