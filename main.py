@@ -107,6 +107,11 @@ if parameters.icon is not None:
 pass
 
 # parse the document
+with open(parameters.src_path) as old:
+    for x in old:
+
+
+
 with open(parameters.src_path) as doc:
     index = 0 # index of current parsed line
     in_code_quote = False # whether the parsed line is currently in a code quote
